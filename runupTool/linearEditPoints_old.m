@@ -1,21 +1,52 @@
 function linearEditPoints()
+disp('in linearEditPoints')
 % GUI callback to allow editing of pixstack edge
 %if you tweak with the figure, make sure and add tweaks to
 %figureStateChange!!!
-%try
+try
 figureStateChange('off');
 
 hi = findobj(gcf,'Type','image');
 yData = get(hi(1),'YData');
 
-% roi = drawpolyline
-% makeUniquePears = roi.Position
-% x = roi.Position(:,1);
-% y = roi.Position(:,2);
-[x,y]=getpts;
+
+
+
+%[x,y] = editGetPoints;
+x = 1;
+y = 1;
+q = 1;
+h = 1;
+hold on
+disp('After 1st point')
+while q(end)~=3
+[xx,yy,qq] = ginput(1);
+hh = plot(xx,yy,'x');
+x = [x;xx];
+y = [y;yy];
+q = [q;qq];
+h = [h;hh];
+disp('in loop')
+disp(q)
+end
+x = x(2:end);
+y = y(2:end);
+clear q;
+delete(h(2:end));
+hold off
+disp('After while loop')
+makeUniquePears = [x, y]
+
+if (size(makeUniquePears,1)<2)
+  disp('when using edit mode, select more than one point')
+  figureStateChange(1);
+  return;
+end;
+
 [B,I,J]= unique(y);
 y = y(I);
 x = x(I);
+disp('found y,x unique')
 if (min(y)<yData(1))
     x(end+1) = interp1(y,x,yData(1));
     y(end+1) = yData(1);
@@ -26,10 +57,11 @@ if (max(y)>yData(end))
     y(end+1) = N;
 end
 
-
 good = find((y >= min(yData))&(y<=(max(yData))));
 y = y(good);
 x = x(good);
+disp('found y,x good')
+disp(x)
 
 yi = [ceil(min(y)):floor(max(y))]';
 xi = round(interp1(y,x,yi)); 
@@ -69,10 +101,10 @@ set(handle.edgeButtonTag, 'UserData', dline)
 makeLine;
 figureStateChange(1);
 
-% catch
-%     makeLine;
-%     figureStateChange(1);
-% end
+catch
+    makeLine;
+    figureStateChange(1);
+end
 %
 % Copyright by Oregon State University, 2002
 % Developed through collaborative effort of the Argus Users Group
@@ -87,6 +119,4 @@ figureStateChange(1);
 %
 %key internal runup 
 %comment  
-% Revision 2022/11/29 Athina Lange
-
-
+%

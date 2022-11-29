@@ -6,19 +6,19 @@ handle = get (gcf,'userData'); % retreive from the cache
 
 if lineIn == 'off';
 
-set (handle.listbox               ,'callback',' editErrorMessage');
-set (handle.NFiltDark             ,'callback',' editErrorMessage');
-set (handle.NFiltLight            ,'callback',' editErrorMessage');
-set (handle.maxRundown            ,'callback',' editErrorMessage');
-set (handle.IThreshDown           ,'callback',' editErrorMessage');
-set (handle.IThreshUp             ,'callback',' editErrorMessage');
-set (handle.quitButtonTag         ,'callback',' editErrorMessage');
-set (handle.saveButtonTag         ,'callback',' editErrorMessage');
-set (handle.editButtonTag         ,'callback',' editErrorMessage');
-set (handle.backgroundIntensityTag,'callback',' editErrorMessage');
-set (handle.edgeButtonTag         ,'callback',' editErrorMessage');
-set (handle.backButtonTag         ,'callback',' editErrorMessage');
-set (handle.forwardButtonTag      ,'callback',' editErrorMessage');
+% set (handle.listbox               ,'callback',' editErrorMessage');
+% set (handle.NFiltDark             ,'callback',' editErrorMessage');
+% set (handle.NFiltLight            ,'callback',' editErrorMessage');
+% set (handle.maxRundown            ,'callback',' editErrorMessage');
+% set (handle.IThreshDown           ,'callback',' editErrorMessage');
+% set (handle.IThreshUp             ,'callback',' editErrorMessage');
+% set (handle.quitButtonTag         ,'callback',' editErrorMessage');
+% set (handle.saveButtonTag         ,'callback',' editErrorMessage');
+% set (handle.editButtonTag         ,'callback',' editErrorMessage');
+% set (handle.backgroundIntensityTag,'callback',' editErrorMessage');
+% set (handle.edgeButtonTag         ,'callback',' editErrorMessage');
+% set (handle.backButtonTag         ,'callback',' editErrorMessage');
+% set (handle.forwardButtonTag      ,'callback',' editErrorMessage');
 
 else
 set (handle.listbox               ,'callback','displayImage');
