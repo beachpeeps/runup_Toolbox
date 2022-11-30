@@ -29,6 +29,11 @@ runup.params.imageName = saveStructure.imageName;
 runup.params.y_index = saveStructure.y_index;
 runup.params.dataLoc = saveStructure.dataLoc;
 runup.params.date      = epochtime;
+confidence = questdlg('Are you confident in the determined runup line?', ...
+'Runup Confidence',...
+    'Confident','Unsure', 'Confident');
+runup.params.confidence = confidence;
+
 Ri = runup.Ri;
 
 runup.epoch  = stackData.epoch';
