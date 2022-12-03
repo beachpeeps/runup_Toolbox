@@ -22,23 +22,28 @@ if length(files_runup) > 0
     runup_names = char({files_runup.name}); runup_names = unique(string(runup_names(:, 1:end-11)));
 
     count = 0;
-    for ii = 1:length(files_data)
+    for ii = length(files_data):-1:1
         if ~contains(runup_names,file_names(ii,:)) % runup file does not exist in runup folder
             count = count+1;
         end
     end
-    disp(['There are ' char(string(count)) ' timestacks left to process.'])
+    disp(['There are ' char(string(count)) ' files left to process.'])
+else
+    runup_names = char();
+    disp(['There are ' char(string(length(files_data))) ' files left to process.'])
 end
 
 %% Loop through all files to be done
  
-for  ii = 1:length(files_data)
+for ii = 1:length(files_data)
     % if a given file is incorrect - you will have to delete the corresponding
     % runup file for it to process
     if ~contains(runup_names,file_names(ii,:)) % runup file does not exist in runup folder
         disp(['Timestack ' file_names(ii,:) ' is being processed.'])
         
         runupTool(data_dir, file_names(ii,:), user)
+        disp('Click any key to continue')
+        pause
     else
         disp(['Timestack ' file_names(ii,:) ' has already been processed.'])
         disp(['Please delete file in order to continue.'])
@@ -53,18 +58,46 @@ for  ii = 1:length(files_data)
 end % loop through all files in folder
 
 %% 
-figure
-image(stackData.XYZ(:,1),stackData.T,stackData.RAW)
-hold on
-plot(stackData.XYZ(runup.Ri,1),stackData.T, 'r')
+% figure
+% image(stackData.XYZ(:,1),stackData.T,stackData.RAW)
+% hold on
+% plot(stackData.XYZ(runup.Ri,1),stackData.T, 'r')
 
 %% New runupTool function
 function runupTool(data_dir, file_name, user)
-    dataPATH = fullfile(data_dir, 'data', [file_name '.mat'])
+    dataPATH = fullfile(data_dir, 'data', [file_name '.mat']);
      
     data = load(dataPATH);
     disp(['Total of ' char(string(length(data.pixInst))) ' timestacks to process'])
+    %% Grid or transect
+    % This will need improving. Hard coding Ruby2D here - in future can be
+    % a drop down / selection of which MOP lines to run. 
+    if data.pixInst.type == 'Grid'
+        ButtonName = questdlg('Is this Torrey Pines?', ...
+            'Extract MOP lines',...
+                    'Yes','No', 'Yes');
+        switch ButtonName
+            case 'Yes'
+                yloc = [-100 0 100 133 200 300 400]';
+                id_yloc = dsearchn(data.pixInst.Y(:,1), yloc);
+                for ll = 1:length(yloc)
+                    data.pixInst(length(data.pixInst)+1).type = 'xTransect';
+                    data.pixInst(length(data.pixInst)).dx = 5;
+                    data.pixInst(length(data.pixInst)).xlim = data.pixInst(1).xlim;
+                    data.pixInst(length(data.pixInst)).y = yloc(ll);
+                    data.pixInst(length(data.pixInst)).z = {};
+                    data.pixInst(length(data.pixInst)).X = data.pixInst(1).X(id_yloc(ll),:);
+                    data.pixInst(length(data.pixInst)).Y = round(data.pixInst(1).Y(id_yloc(ll),:));
+                    data.pixInst(length(data.pixInst)).Z = data.pixInst(1).Z(id_yloc(ll),:);
+                    data.pixInst(length(data.pixInst)).Irgb = permute(squeeze(data.pixInst(1).Irgb(id_yloc(ll),:,:,:)), [1 3 2]);
+                end
+                data.pixInst(1)=[];
 
+            case 'No'
+                disp('Other locations besides Torrey Pines have not been set')
+                return
+        end
+    end
     %% loop through every alongshore transect
     for gg = 1:length(data.pixInst)
         %%
@@ -84,14 +117,13 @@ function runupTool(data_dir, file_name, user)
         stackData.RAW = fliplr(permute(data.pixInst(gg).Irgb(:, 1:d_id:end,:), [2 1 3])); % need to set up file in same format as ARGUS
         stackData.T = posixtime(datetime(data.t(:, 1:d_id:end), 'ConvertFrom', 'datenum', 'TimeZone', 'UTC'));
         stackData.XYZ = [flipud(-data.pixInst(gg).X) data.pixInst(gg).Y data.pixInst(gg).Z];
-
+%%
         figure(10);clf
         image(data.pixInst(gg).Irgb)
         ButtonName = questdlg('Is runup line visible?', ...
             ['MOP = ' MOP],...
                     'Yes','No', 'Yes');
-        switch ButtonName
-            case 'Yes'
+        if contains(ButtonName, 'Yes')
 
                 inputStructure.imageName = file_name; % OG image name
                 inputStructure.y_index = gg; % index in pixInst
@@ -120,7 +152,7 @@ function runupTool(data_dir, file_name, user)
                 stackData.params.lines = length(stackData.T);                         %length of time stack/series
                 stackData.epoch = stackData.T;
                 stackData.xyz = stackData.XYZ(ind,:);
-            
+                
                 %% ---------------------- GUI ----------------------
                 % keyboard
                 toolFigure  = parameters('toolFigure');
@@ -369,8 +401,7 @@ function runupTool(data_dir, file_name, user)
                 %%
                 %bring up the first screen;
                 showScreen(1);
-        
-                %saveRunup
+
         end % switch
     end %% gg - run through alongshore transects
     disp(['Done with transect ' file_name])
